@@ -1,33 +1,38 @@
-#define BLYNK_PRINT Serial
-
 #include <SPI.h>
-//#include <WiFiUdp.h>
 #include <RTCZero.h>
 // Simple library that include Blynk and WiFiNINA -> https://github.com/blynkkk/blynk-library/blob/master/src/BlynkSimpleWiFiNINA.h
 #include <BlynkSimpleWiFiNINA.h>
 #include "credentials.h"
 
-int sunset = 17;
+#define BLYNK_PRINT Serial
 #define PIR_PIN 7
 #define LIGHT_PIN 6
 
-extern char SSID[] = "";
-extern char PSWD[] = "";
-extern char AUTH_BLYNK[] = "";
-
 RTCZero rtc;
-
-int status = WL_IDLE_STATUS;
-
-int lightState = LOW;
 
 // Greenwich Mean Time
 const int GMT = 1;
-boolean isEnablePIR = 1;
+
+int status = WL_IDLE_STATUS;
+int lightState = LOW;
+
+int sunset = 17;
+
+boolean isEnablePIR = true;
 int counterGetTime = 0;
 boolean notifying = false;
+boolean hasNotified = false;
 
-int oneTime = 0;
+BlynkTimer timer;
+
+void myTimerEvent()
+{
+  // You can send any value at any time.
+  // Please don't send more that 10 values per second.
+  Blynk.virtualWrite(V1, isEnablePIR);
+  Blynk.virtualWrite(V3, lightState);
+  Blynk.virtualWrite(V4, notifying);
+}
 
 void setup() {
   Serial.begin(115200);
@@ -73,6 +78,9 @@ void setup() {
   // Pins
   pinMode(PIR_PIN, INPUT);
   pinMode(LIGHT_PIN, OUTPUT);
+
+  // Setup a function to be called every second
+  timer.setInterval(1000L, myTimerEvent);
 }
 
 void loop() {
@@ -83,11 +91,16 @@ void loop() {
     lightState = HIGH;
   }
 
-  if (!notifying) {
-    oneTime = 0;
+  if (notifying) {
+    hasNotified = false;
   }
+
   digitalWrite(LIGHT_PIN, lightState);
   keepOnForNMinutes(1);
+
+// Initiates BlynkTimer
+   timer.run(); 
+
   delay(200);
 }
 
@@ -123,10 +136,11 @@ void keepOnForNMinutes(int minutes) {
       sum -= 60;
     }
 
-    if (notifying && oneTime == 0) {
-      Blynk.notify("The light go on until: " + String(hoursState) + ":" + String(sum) + ":" +
-                   String(secondsState));
-      oneTime += 1;
+    if (notifying && !hasNotified) {
+      Blynk.notify("The light go on until: " + String(hoursState) + ":" + String(sum) + ":" + String(secondsState));
+      hasNotified = true;
+      // Just one time
+      notifying = false;
     }
 
     if (rtc.getMinutes() == sum && rtc.getSeconds() == secondsState) {
@@ -138,6 +152,8 @@ void keepOnForNMinutes(int minutes) {
 
 void setManualLight(int value) {
   lightState = value;
+
+  // Cleaning status
   counterGetTime = 0;
   hoursState = 0;
   minutesState = 0;
@@ -158,5 +174,5 @@ BLYNK_WRITE(V3){
 
 // Virtual Pin 4 if you want receive a notify
 BLYNK_WRITE(V4){
-    notifying = param.asInt();
+    notifying = param.asInt() >= 1 ? true : false;
 }
