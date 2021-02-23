@@ -1,3 +1,9 @@
+# credentials
+credentials.h
+
+# Ide
+.idea
+
 # Prerequisites
 *.d
 
