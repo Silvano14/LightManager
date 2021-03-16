@@ -1,6 +1,6 @@
-# ManagerLight
+# LightManager
 - - -
-A simple project to manage lights by arduino with wifi module and Blynk. You can set a countdown for a light (defulat is one minute) or 
+A simple project to manage lights by arduino with wifi module and Blynk. You can set a countdown for a light (default is one minute) or 
 receive a notification from microcontroller when the light is turned on.
 
 ## Prerequisites
@@ -28,8 +28,8 @@ Nobody :'(
 
 ## Authors
 
-Silvano Norberti - [ManagerLight](https://github.com/Silvano14/ManagerLight)
+Silvano Norberti - [LightManager](https://github.com/Silvano14/LightManager)
 See also the list of contributors who participated in this project.
 
 ## License
-This project is licensed under the GNU License - see the [LICENSE](https://github.com/Silvano14/ManagerLight/blob/master/LICENSE) file for details
+This project is licensed under the GPL 3.0 License - see the [LICENSE](https://github.com/Silvano14/ManagerLight/blob/master/LICENSE) file for details
