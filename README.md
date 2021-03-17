@@ -1,7 +1,7 @@
 # LightManager
 - - -
-A simple project to manage lights by arduino with wifi module and Blynk. You can set a countdown for a light (default is one minute) or 
-receive a notification from microcontroller when the light is turned on.
+A simple project to manage lights by arduino with wifi module and [Blynk](https://www.blynk.cc/). You can set a countdown for a light (default is one minute) or 
+receive a notification in the phone (by [Blynk](https://www.blynk.cc/) app) when the light is turned on.
 
 ## Prerequisites
 
