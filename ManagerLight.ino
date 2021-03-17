@@ -18,6 +18,7 @@ LATITUDE = 45.962650;
 
 TimeLord myLord;
 RTCZero rtc;
+BlynkTimer timer;
 
 // Greenwich Mean Time
 const int GMT = 1;
@@ -28,17 +29,6 @@ boolean isSavedTimeState = false;
 boolean isEnablePIR = true;
 boolean notifying = false;
 boolean hasNotified = false;
-byte day[] = {};
-
-BlynkTimer timer;
-
-void updateBlynkInterface() {
-  // You can send any value at any time.
-  // Please don't send more that 10 values per second.
-  Blynk.virtualWrite(V1, isEnablePIR);
-  Blynk.virtualWrite(V3, lightState);
-  Blynk.virtualWrite(V4, notifying);
-}
 
 void setup() {
   Serial.begin(115200);
@@ -87,7 +77,11 @@ void setup() {
 void loop() {
   Blynk.run();
 
-  if (digitalRead(PIR_PIN) == HIGH && isSunset(sunset) && isEnablePIR) {
+  // Setup sunset 
+  byte day[] = {0, 0, 0, rtc.getDay(), rtc.getMonth(), rtc.getYear()};
+  myLord.SunSet(day);
+
+  if (digitalRead(PIR_PIN) == HIGH && isSunset(sunset, day) && isEnablePIR) {
     Serial.println("I see you!");
     lightState = HIGH;
   }
@@ -102,15 +96,11 @@ void loop() {
   // Start BlynkTimer
   timer.run();
 
-  // Setup sunset 
-  day = {0, 0, 0, rtc.getDay(), rtc.getMonth(), rtc.getYear()};
-  myLord.SunSet(day);
-
-  // Optional
+  // See updateBlynkInterface method
   delay(1000);
 }
 
-boolean isSunset(int timeSunset) {
+boolean isSunset(int timeSunset, byte day[]) {
   return (((rtc.getHours() + GMT) >= day[tl_hour]) && (rtc.getMinutes() >= day[tl_minute]));
 }
 
@@ -126,11 +116,10 @@ void keepOnForNMinutes(int minutes) {
       hoursState = rtc.getHours() + GMT;
       minutesState = rtc.getMinutes();
       secondsState = rtc.getSeconds();
-      isSavedTimeState = true;
-      Serial.println(
-          "Time get it! - " + String(hoursState) + ":" + String(minutesState) + ":" + String(secondsState));
+      Serial.println("Time get it! - " + String(hoursState) + ":" + String(minutesState) + ":" + String(secondsState));
       Serial.println("Keeping on...");
       sum = minutesState + minutes;
+      isSavedTimeState = true;
     }
 
     if (minutes <= 0) {
@@ -163,6 +152,14 @@ void setManualLight(int value) {
   hoursState = 0;
   minutesState = 0;
   secondsState = 0;
+}
+
+void updateBlynkInterface() {
+  // You can send any value at any time.
+  // Please don't send more that 10 values per second.
+  Blynk.virtualWrite(V1, isEnablePIR);
+  Blynk.virtualWrite(V3, lightState);
+  Blynk.virtualWrite(V4, notifying);
 }
 
 // Use virtual pin 1 to active Passive InfraRed
